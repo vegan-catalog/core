@@ -1,0 +1,45 @@
+version: "3.8"
+
+networks:
+  common:
+
+volumes:
+  mysql-data:
+    driver: local
+
+services:
+
+  vegan-catalog-product-mysql:
+    image: mysql:8.0.30
+    container_name: ${MYSQL_HOST}
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - common
+
+  vegan-catalog-product-php:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: vegan-catalog-product-php
+    volumes:
+      - "./:/var/www/html/"
+    depends_on:
+      - vegan-catalog-product-mysql
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "80"
+      - "443"
+    networks:
+      - common
