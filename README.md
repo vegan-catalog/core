@@ -1,1 +1,1 @@
-# product entity and repository
+# core
