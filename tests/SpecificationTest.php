@@ -1,44 +1,56 @@
 <?php
 
-namespace VeganCatalog\Product\Tests;
+namespace VeganCatalog\Core\Tests;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use VeganCatalog\Product\Domain\Specification;
+use VeganCatalog\Core\Id;
+use VeganCatalog\Core\IdCollection;
+use VeganCatalog\Core\Specification;
 
 class SpecificationTest extends TestCase
 {
     public function testSetCorrectIds(): void
     {
-        $ids = [Uuid::uuid4(),Uuid::uuid4()];
+        $ids = new IdCollection([
+            Id::another()
+        ]);
         static::assertEquals(
             $ids,
             (new Specification())->setIds($ids)->ids()
         );
     }
 
-    public function testSetWrongIds(): void
+    public function testSetCorrectIsVegan(): void
     {
-        $wrongIds = [
-            [1.2],
-            [1,2],
-            [null],
-            [[]],
-            ['string'],
-            [true],
-            [new \stdClass()],
-        ];
-        foreach ($wrongIds as $wrongId) {
-            try {
-                (new Specification())->setIds($wrongId);
-                static::fail('Expected exception was not thrown');
-            } catch (\Throwable $e) {
-                static::assertInstanceOf(InvalidArgumentException::class, $e);
-                continue;
-            }
-        }
+        $specification = new Specification();
+        static::assertTrue($specification->setIsVegan(true)->isVegan());
+        static::assertFalse($specification->setIsVegan(false)->isVegan());
+    }
+
+    public function testSetTitle(): void
+    {
+        $title = 'title';
+        $specification = new Specification();
+        static::assertEquals(
+            $title,
+            $specification->setTitle($title)->title()
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $specification->setTitle('');
+    }
+
+    public function testSetDescription(): void
+    {
+        $description = 'description';
+        $specification = new Specification();
+        static::assertEquals(
+            $description,
+            $specification->setDescription($description)->description()
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $specification->setDescription('');
     }
 
     public function testSetCreatedAtMin(): void
@@ -81,5 +93,47 @@ class SpecificationTest extends TestCase
         $specification->setCreatedAtMin($createdAtMax);
         $this->expectException(InvalidArgumentException::class);
         $specification->setCreatedAtMax($createdAtMax);
+    }
+
+    public function testSetUpdatedAtMin(): void
+    {
+        $specification = new Specification();
+        $updatedAtMin = new DateTimeImmutable();
+        $specification->setUpdatedAtMax($updatedAtMin->modify('+1 day'));
+        $specification->setUpdatedAtMin($updatedAtMin);
+        static::assertEquals(
+            $updatedAtMin,
+            $specification->updatedAtMin()
+        );
+    }
+
+    public function testSetWrongUpdatedAtMin(): void
+    {
+        $specification = new Specification();
+        $updatedAtMin = new DateTimeImmutable();
+        $specification->setUpdatedAtMax($updatedAtMin);
+        $this->expectException(InvalidArgumentException::class);
+        $specification->setUpdatedAtMin($updatedAtMin);
+    }
+
+    public function testSetUpdatedAtMax(): void
+    {
+        $specification = new Specification();
+        $updatedAtMax = new DateTimeImmutable();
+        $specification->setUpdatedAtMin($updatedAtMax->modify('-1 day'));
+        $specification->setUpdatedAtMax($updatedAtMax);
+        static::assertEquals(
+            $updatedAtMax,
+            $specification->updatedAtMax()
+        );
+    }
+
+    public function testSetWrongUpdatedAtMax(): void
+    {
+        $specification = new Specification();
+        $updatedAtMax = new DateTimeImmutable();
+        $specification->setUpdatedAtMin($updatedAtMax);
+        $this->expectException(InvalidArgumentException::class);
+        $specification->setUpdatedAtMax($updatedAtMax);
     }
 }

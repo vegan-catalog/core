@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace VeganCatalog\Product\Domain;
+namespace VeganCatalog\Core;
 
 use Ramsey\Collection\AbstractCollection;
 
-final class Collection extends AbstractCollection
+final class SourceCollection extends AbstractCollection
 {
     public function getType(): string
     {
-        return Article::class;
+        return Source::class;
     }
 }
